@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <ion-col size-lg="2">
+          <ion-title style="height: 100%;">Order History</ion-title>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button *ngIf="currentOrder != undefined" slot="start" (click)="initData()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-col *ngIf="history != undefined">
+    <ion-card *ngFor="let order of history" (click)="setOrder(order)">
+      <ion-card-header class="ion-text-center">
+        <ion-card-title>Order: {{order.orderId}}</ion-card-title>
+        <ion-card-subtitle>Date: {{order.orderDate}}</ion-card-subtitle>
+        <ion-card-subtitle>Total Value: {{order.totalValue}} RON</ion-card-subtitle>
+        <ion-card-subtitle>Address: {{order.address}}</ion-card-subtitle>
+        <ion-card-subtitle>Card Details: {{order.cardDetails}}</ion-card-subtitle>
+        <ion-card-subtitle *ngIf="order.deliveryMethod != undefined">Delivery Method: {{order.deliveryMethod}}</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+  </ion-col>
+
+  <ion-grid>
+    <ion-row style="justify-content: center" *ngIf="currentOrder !== undefined">
+      <ion-col size-lg="3" *ngFor="let product of currentOrder.products">
+        <ion-card [routerLink]="['/product/detail']" [queryParams]="{productId : product.productId}">
+          <img [src]="product.photo !== null ?
+           'data:image/jpg;base64,' + product.photo :
+           'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'"
+          style="width: 100%; height: 200px;"/>
+          <ion-card-header class="ion-text-center">
+            <ion-card-title>{{product.productName}}</ion-card-title>
+          </ion-card-header>
+      
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-icon name="cash-outline" slot="start" color="success"></ion-icon> 
+              <ion-label>{{product.price}} RON</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="bag-outline" slot="start" color="success"></ion-icon> 
+              <ion-label>Quantity: {{product.quantity}}</ion-label>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+    </ion-row>
+  </ion-grid> 
+</ion-content>
