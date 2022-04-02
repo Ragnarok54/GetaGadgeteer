@@ -1,9 +1,13 @@
-﻿using GetaGadget.BusinessLogic.Services;
+﻿using GetaGadget.API.Authorization;
+using GetaGadget.BusinessLogic.Services;
+using GetaGadget.Common.Enums;
 using GetaGadget.Domain.DTO.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.Mail;
 
 namespace GetaGadget.API.Controllers
 {
@@ -62,6 +66,39 @@ namespace GetaGadget.API.Controllers
             {
                 _logger.LogError(ex, "Error while registering user ");
                 return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPost]
+        [Route("Contact")]
+        [GetaGadgetAuthorize]
+        public IActionResult Contact([FromBody] ContactModel model)
+        {
+            try
+            {
+                _userService.SendContactMail(GetCurrentUserId(), model);
+
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error while registering user ");
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        private int GetCurrentUserId()
+        {
+            var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            if (token != null)
+            {
+                return int.Parse(JwtService.GetClaim(TokenClaim.UserId, token));
+            }
+            else
+            {
+                return 0;
             }
         }
     }
