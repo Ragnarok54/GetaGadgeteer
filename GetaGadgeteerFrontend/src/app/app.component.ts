@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { MenuController } from '@ionic/angular';
+import { MenuController, NavController } from '@ionic/angular';
 import { AuthService } from './auth/auth.service';
 @Component({
   selector: 'app-root',
@@ -12,7 +12,7 @@ export class AppComponent {
     { title: 'Inbox', url: '/', icon: 'mail' },
   ];
 
-  constructor(private authService: AuthService, private router: Router, private menu: MenuController) {}
+  constructor(private authService: AuthService, private router: Router, private menu: MenuController, public navCtrl: NavController) {}
 
   public name(){
     return this.authService.currentUserName;
@@ -28,6 +28,10 @@ export class AppComponent {
 
   public onNavigate(url){
     this.router.navigateByUrl(url);
+  }
+
+  public about(url){
+    window.open(url);
   }
 
   public onLogout(){

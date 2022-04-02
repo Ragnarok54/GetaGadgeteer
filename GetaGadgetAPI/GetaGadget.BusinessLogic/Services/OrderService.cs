@@ -11,7 +11,8 @@ namespace GetaGadget.BusinessLogic.Services
     {
         private readonly ProductService _productService;
 
-        public OrderService(IUnitOfWork unitOfWork, ProductService productService) : base(unitOfWork) {
+        public OrderService(IUnitOfWork unitOfWork, ProductService productService) : base(unitOfWork)
+        {
             this._productService = productService;
         }
 
@@ -46,6 +47,33 @@ namespace GetaGadget.BusinessLogic.Services
             return order;
         }
 
+        public void ChangeProductQuantity(int userId, int productId, int quantity)
+        {
+            // Get order that does not have a date yet
+            var order = UnitOfWork.OrderRepository.GetCurrentOrder(userId);
+
+            var orderProduct = order?.OrderProducts.FirstOrDefault(op => op.ProductId == productId);
+
+            if (orderProduct != null) 
+            {
+                var product = UnitOfWork.ProductRepository.Get(productId);
+
+                order.TotalValue += (quantity - orderProduct.Quantity) * product.Price;
+                orderProduct.Quantity = quantity;
+
+                if (orderProduct.Quantity <= 0)
+                {
+                    UnitOfWork.OrderProductRepository.Remove(orderProduct);
+                    if (!order.OrderProducts.Any())
+                    {
+                        UnitOfWork.OrderRepository.Remove(order);
+                    }
+                }
+            }
+
+            Save();
+        }
+
         public Order AddProductToOrder(int userId, int productId)
         {
             // Get order that does not have a date yet
@@ -62,27 +90,27 @@ namespace GetaGadget.BusinessLogic.Services
             }
 
             order = AddProductToOrder(order, productId);
-            
+
             Save();
 
             return order;
         }
-        
+
         public Order RemoveProductFromOrder(int userId, int productId)
         {
-            var order = UnitOfWork.OrderRepository.Find(o => o.UserId == userId && o.OrderDate == null).FirstOrDefault();
+            var order = UnitOfWork.OrderRepository.GetCurrentOrder(userId);
 
             if (order != null)
             {
                 var orderProduct = UnitOfWork.OrderProductRepository.Find(op => op.OrderId == order.OrderId && op.ProductId == productId).FirstOrDefault();
                 var product = UnitOfWork.ProductRepository.Get(productId);
 
-                orderProduct.Quantity -= 1;
-                order.TotalValue -= product.Price;
+                order.TotalValue -= product.Price * orderProduct.Quantity;
+                order.OrderProducts.Remove(orderProduct);
 
-                if (orderProduct.Quantity <= 0)
+                if (order.OrderProducts.Count == 0)
                 {
-                    order.OrderProducts.Remove(orderProduct);
+                    UnitOfWork.OrderRepository.Remove(order);
                 }
             }
 

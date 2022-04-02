@@ -98,6 +98,26 @@ namespace GetaGadget.API.Controllers
         }
 
         [HttpPost]
+        [Route("Quantity")]
+        [GetaGadgetAuthorize]
+        public IActionResult SetQuantity([FromQuery] int productId, [FromQuery] int quantity)
+        {
+            try
+            {
+                var userId = (int)GetCurrentUserId();
+
+                _orderService.ChangeProductQuantity(userId, productId, quantity);
+                
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching order history");
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPost]
         [Route("Place")]
         [GetaGadgetAuthorize]
         public IActionResult PlaceOrder([FromBody] PlaceOrderModel model)

@@ -14,27 +14,67 @@
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
         </ion-menu-toggle> -->
-        <ion-item lines="none" (click)="onNavigate('/product')" button>
-          <ion-label>Products</ion-label>
-          <ion-icon name="storefront-outline" slot="start"></ion-icon>
-        </ion-item>
-        <ion-item lines="none" (click)="onNavigate('/order')" button>
-          <ion-label>Cart</ion-label>
-          <ion-icon name="cart-outline" slot="start"></ion-icon>
-        </ion-item>
-        <ion-item lines="none" (click)="onNavigate('/order/history')" button>
-          <ion-label>Order History</ion-label>
-          <ion-icon name="reader-outline" slot="start"></ion-icon>
-        </ion-item>
-        <ion-item lines="none" (click)="onLogout()" button>
-          <ion-label>Logout</ion-label>
-          <ion-icon name="log-out-outline" slot="start"></ion-icon>
-        </ion-item>
-
+        <ion-menu-toggle>
+          <ion-item lines="none" (click)="onNavigate('/product')" button>
+            <ion-label>Products</ion-label>
+            <ion-icon name="storefront-outline" slot="start"></ion-icon>
+          </ion-item>
+          <ion-item lines="none" (click)="onNavigate('/order')" button>
+            <ion-label>Cart</ion-label>
+            <ion-icon name="cart-outline" slot="start"></ion-icon>
+          </ion-item>
+          <ion-item lines="none" (click)="onNavigate('/order/history')" button>
+            <ion-label>Order History</ion-label>
+            <ion-icon name="reader-outline" slot="start"></ion-icon>
+          </ion-item>
+          <ion-item lines="none" (click)="onNavigate('/about')" button>
+            <ion-label>About Us</ion-label>
+            <ion-icon name="storefront-outline" slot="start"></ion-icon>
+          </ion-item>
+          <ion-item lines="none" (click)="onNavigate('/contact')" button>
+            <ion-label>Contact</ion-label>
+            <ion-icon name="at-circle-outline" slot="start"></ion-icon>
+          </ion-item>
+          <ion-item lines="none" (click)="onLogout()" button>
+            <ion-label>Logout</ion-label>
+            <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          </ion-item>
+        </ion-menu-toggle>
       </ion-list>
 
     </ion-content>
-  </ion-menu>
 
+    <ion-footer>
+      <ion-toolbar>
+        <ion-grid>
+          <ion-row>
+            <ion-col class="ion-text-center">
+              <ion-title>Check us out at</ion-title>
+            </ion-col>
+          </ion-row>
+          <ion-row class="ion-justify-content-evenly">
+            <ion-col offset="1" size="3">
+              <ion-item (click)="about('https://www.facebook.com')" lines="none" color="transparent" button>
+                <ion-icon name="logo-facebook"></ion-icon>
+              </ion-item>
+            </ion-col>
+            <ion-col offset="1" size="3">
+              <ion-item (click)="about('https://www.instagram.com')" lines="none" color="transparent" button>
+                <ion-icon name="logo-instagram"></ion-icon>
+              </ion-item>
+            </ion-col>
+            <ion-col offset="1" size="3">
+              <ion-item (click)="about('https://www.twitter.com')" lines="none" color="transparent" button>
+                <ion-icon name="logo-twitter"></ion-icon>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+  
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
+  
   <ion-router-outlet id="main-content"></ion-router-outlet>
+
 </ion-app>

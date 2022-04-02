@@ -27,9 +27,17 @@ const routes: Routes = [
     loadChildren: () => import('./wishlist/wishlist.module').then( m => m.WishlistPageModule)
   },
   {
+    path: 'about',
+    loadChildren: () => import('./about/about.module').then( m => m.AboutPageModule)
+  },
+  {
+    path: 'contact',
+    loadChildren: () => import('./contact/contact.module').then( m => m.ContactPageModule)
+  },
+  {
     path: "**",
     redirectTo: 'product'
-  }
+  },
 ];
 
 @NgModule({
