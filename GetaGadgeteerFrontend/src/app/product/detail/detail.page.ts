@@ -29,6 +29,10 @@ export class DetailPage implements OnInit {
               private authService : AuthService) { }
 
   async ngOnInit() {
+
+  }
+
+  async ionViewWillEnter(){
     const loading = await this.loadingController.create({
       message: 'Loading product. Please wait...',
       backdropDismiss: false

@@ -4,7 +4,10 @@ using GetaGadget.Domain.Entities;
 using GetaGadget.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GetaGadget.BusinessLogic.Services
 {
@@ -91,7 +94,7 @@ namespace GetaGadget.BusinessLogic.Services
                 ProviderId = model.Provider,
                 DeliveryMethodId = model.DeliveryMethod,
                 CategoryId = model.Category,
-                Photo = ConvertToByteArray(model.Photo)
+                Photo = Compress(ConvertToByteArray(model.Photo))
             };
 
             _unitOfWork.ProductRepository.Add(product);
@@ -112,7 +115,7 @@ namespace GetaGadget.BusinessLogic.Services
 
             if (model.Photo != null)
             {
-                product.Photo = ConvertToByteArray(model.Photo);
+                product.Photo = Compress(ConvertToByteArray(model.Photo));
             }
 
             _unitOfWork.SaveChanges();
@@ -131,7 +134,33 @@ namespace GetaGadget.BusinessLogic.Services
 
         public string ConvertToBase64String(byte[] byteArray)
         {
-            return byteArray == null ? null : Convert.ToBase64String(byteArray);
+            return byteArray == null ? null : Convert.ToBase64String(Decompress(byteArray));
+        }
+
+        public IEnumerable<string> SearchProductNames(string query)
+        {
+            return _unitOfWork.ProductRepository.GetList(query, null, null, null, null, null).Select(p => p.Name);
+        }
+
+        public static byte[] Compress(byte[] data)
+        {
+            MemoryStream output = new MemoryStream();
+            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
+            {
+                dstream.Write(data, 0, data.Length);
+            }
+            return output.ToArray();
+        }
+
+        public static byte[] Decompress(byte[] data)
+        {
+            MemoryStream input = new MemoryStream(data);
+            MemoryStream output = new MemoryStream();
+            using (DeflateStream dstream = new DeflateStream(input, CompressionMode.Decompress))
+            {
+                dstream.CopyTo(output);
+            }
+            return output.ToArray();
         }
     }
 }

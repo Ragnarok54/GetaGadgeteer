@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { PopoverController, ToastController } from '@ionic/angular';
+import { IonPopover, LoadingController, PopoverController, ToastController } from '@ionic/angular';
 import { first, take } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { SortType } from '../common/sortType';
@@ -15,7 +15,6 @@ import { ProductService } from './product.service';
   styleUrls: ['./product.page.scss'],
 })
 export class ProductPage implements OnInit {
-
   private productData: ProductData;
   private searchTerm: string;
   private provider: number[];
@@ -23,9 +22,11 @@ export class ProductPage implements OnInit {
   private category: number[];
   private sortBy: number;
   private inStock: boolean;
-
+  private wasPredSearchClicked: boolean;
   public productList: Product[];
   public isLoading = false;
+
+  public predictiveSearch: string[];
 
   public get sortType() : typeof SortType{
     return SortType;
@@ -33,7 +34,7 @@ export class ProductPage implements OnInit {
 
   constructor(private productService: ProductService, private popoverController: PopoverController, private toastCtrl: ToastController, private router: Router, private authService : AuthService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.fetchStaticData();
   }
 
@@ -88,5 +89,24 @@ export class ProductPage implements OnInit {
 
   viewWishlist() {
     this.router.navigateByUrl("/wishlist");
+  }
+  
+  search(): void{
+    if (this.wasPredSearchClicked){
+      this.wasPredSearchClicked = false;
+    } else {
+      this.productService.search(this.searchTerm).pipe(take(1)).subscribe(
+        data => {
+          this.predictiveSearch = data;
+        }
+      )
+    }
+  }
+
+  predSearch(item: string){
+    this.searchTerm = item;
+    this.wasPredSearchClicked = true;
+    this.getProductList();
+    this.predictiveSearch = [];
   }
 }

@@ -94,6 +94,23 @@ namespace GetaGadget.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("Search/{query}")]
+        [GetaGadgetAuthorize]
+        public IActionResult Search(string query)
+        {
+            try
+            {
+                return new JsonResult(_productService.SearchProductNames(query));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error while searching the product list " + ex);
+                return Ok();
+            }
+        }
+
+
         [HttpPost]
         [Route("List")]
         [GetaGadgetAuthorize]
