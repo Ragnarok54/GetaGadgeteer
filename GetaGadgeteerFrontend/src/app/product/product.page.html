@@ -8,7 +8,6 @@
 
           <ion-col offset-lg="2" size-lg="4">
             <ion-searchbar mode="ios"
-                           debounce="500"
                            animated
                            color="dark"
                            placeholder="Search Products"
@@ -33,7 +32,7 @@
         <ion-icon name="heart-outline"></ion-icon>
       </ion-button>
     </ion-toolbar>
-    <ion-grid style="position: absolute; top: 37px; right: 0; left: 0; z-index: 100000 !important;" *ngIf="predictiveSearch !== undefined && predictiveSearch.length > 0">
+    <!-- <ion-grid style="position: absolute; top: 37px; right: 0; left: 0; z-index: 100000 !important;" *ngIf="predictiveSearch !== undefined && predictiveSearch.length > 0">
       <ion-row>
         <ion-col offset="4" size="3">
           <ion-list >
@@ -43,7 +42,7 @@
           </ion-list>
         </ion-col>
       </ion-row>
-    </ion-grid>
+    </ion-grid> -->
 </ion-header>
 
 <ion-content *ngIf="this.productData !== undefined">

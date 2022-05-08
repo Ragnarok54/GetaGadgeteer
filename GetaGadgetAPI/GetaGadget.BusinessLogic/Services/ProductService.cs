@@ -2,6 +2,12 @@
 using GetaGadget.Domain.DTO.Product;
 using GetaGadget.Domain.Entities;
 using GetaGadget.Domain.Interfaces;
+using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.QueryParsers;
+using Lucene.Net.Search;
+using Lucene.Net.Store;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +26,67 @@ namespace GetaGadget.BusinessLogic.Services
             _unitOfWork = unitOfWork;
         }
 
+        public void CreateIndex()
+        {
+            var dir = FSDirectory.Open(new DirectoryInfo(@"D:/test_lucene"));
+            var analyzer = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+            var products = _unitOfWork.ProductRepository.GetList(null, null, null, null, null, null);
+
+            using (var writer = new IndexWriter(dir, analyzer, IndexWriter.MaxFieldLength.UNLIMITED))
+            {
+                foreach (var product in products)
+                {
+                    var doc = new Document();
+                    doc.Add(new Field("Id", product.ProductId.ToString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+                    doc.Add(new Field("Name", product.Name, Field.Store.YES, Field.Index.ANALYZED));
+                    doc.Add(new Field("Description", product.Description, Field.Store.YES, Field.Index.ANALYZED));
+                    doc.Add(new Field("Provider", product.Provider.Name, Field.Store.YES, Field.Index.ANALYZED));
+                    doc.Add(new Field("Price", product.Price.ToString(), Field.Store.YES, Field.Index.ANALYZED));
+                    doc.Add(new Field("Image", ConvertToBase64String(product.Photo), Field.Store.YES, Field.Index.ANALYZED));
+
+                    writer.AddDocument(doc);
+                    writer.Optimize();
+                    writer.Commit();
+                }
+            }
+        }
+
+        public IEnumerable<ProductModel> Search(string text)
+        {
+            var directory = FSDirectory.Open(new DirectoryInfo(@"D:/test_lucene"));
+            var analyzer = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+            var parser = new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, new[] { "Name", "Description", "Price", "Provider", "Image", }, analyzer);
+            if (text is null) return new List<ProductModel>();
+            Query query = parser.Parse(text);
+            var searcher = new IndexSearcher(directory, true);
+            TopDocs topDocs = searcher.Search(query, 10);
+
+            var productList = new List<ProductModel>();
+            int results = topDocs.ScoreDocs.Length;
+
+            for (int i = 0; i < results; i++)
+            {
+                ScoreDoc scoreDoc = topDocs.ScoreDocs[i];
+                float score = scoreDoc.Score;
+                int docId = scoreDoc.Doc;
+                Document doc = searcher.Doc(docId);
+
+                if (!productList.Any(x => x.ProductId == int.Parse(doc.Get("Id"))))
+                {
+                    productList.Add(new ProductModel
+                    {
+                        ProductId = int.Parse(doc.Get("Id")),
+                        Name = doc.Get("Name"),
+                        Provider = doc.Get("Provider"),
+                        Description = doc.Get("Description"),
+                        Photo = doc.Get("Image"),
+                        Price = float.Parse(doc.Get("Price"))
+                    });
+                }
+            }
+
+            return productList;
+        }
         public ProductModel GetProductDetails(int productId)
         {
             var product = _unitOfWork.ProductRepository.Get(productId);
@@ -68,6 +135,12 @@ namespace GetaGadget.BusinessLogic.Services
 
         public IEnumerable<ProductModel> GetList(ProductQueryModel model)
         {
+            if (!string.IsNullOrEmpty(model.SearchTerm))
+            {
+                CreateIndex();
+                return Search(model.SearchTerm);
+            }
+
             return _unitOfWork.ProductRepository.GetList(model.SearchTerm, model.ProviderIds, model.DeliveryMethodIds, model.CategoryIds, model.InStock, model.SortById)
                                                 .Select(p => new ProductModel
                                                 {

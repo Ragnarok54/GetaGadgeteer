@@ -1,12 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonPopover, LoadingController, PopoverController, ToastController } from '@ionic/angular';
+import { IonPopover, LoadingController, ModalController, PopoverController, ToastController } from '@ionic/angular';
 import { first, take } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { SortType } from '../common/sortType';
 import { Product } from '../models/product/product';
 import { ProductData } from '../models/product/productData';
 import { ProductQuery } from '../models/product/productQuery';
+import { SearchPage } from '../search/search.page';
 import { ProductService } from './product.service';
 
 @Component({
@@ -25,6 +26,7 @@ export class ProductPage implements OnInit {
   private wasPredSearchClicked: boolean;
   public productList: Product[];
   public isLoading = false;
+  private searchData: Product[];
 
   public predictiveSearch: string[];
 
@@ -32,7 +34,7 @@ export class ProductPage implements OnInit {
     return SortType;
   }
 
-  constructor(private productService: ProductService, private popoverController: PopoverController, private toastCtrl: ToastController, private router: Router, private authService : AuthService) { }
+  constructor(private productService: ProductService, private popoverController: PopoverController, private toastCtrl: ToastController, private router: Router, private authService : AuthService, public modalController: ModalController) { }
 
   async ngOnInit() {
     this.fetchStaticData();
@@ -44,6 +46,9 @@ export class ProductPage implements OnInit {
   }
 
   getProductList(){
+    if (this.searchTerm !== undefined && this.searchTerm.length == 0){
+      this.predictiveSearch = [];
+    }
     this.isLoading = true;
 
     var model = new ProductQuery(this.provider,
@@ -56,7 +61,15 @@ export class ProductPage implements OnInit {
     this.productService.getProductList(model).pipe(first()).subscribe(
       data =>{
         this.productList = data;
+        if (this.searchTerm == undefined) {
+          this.productList = data;
+        } else {
+          this.searchData = data;
+        }
         this.isLoading = false;
+        if (this.searchTerm != undefined) {
+          this.presentModal();
+        }
       },
       error => {
         this.toastCtrl.create({
@@ -92,6 +105,10 @@ export class ProductPage implements OnInit {
   }
   
   search(): void{
+    if(this.searchTerm != undefined && this.searchTerm.length == 0){
+      this.predictiveSearch = [];
+    }
+
     if (this.wasPredSearchClicked){
       this.wasPredSearchClicked = false;
     } else {
@@ -108,5 +125,17 @@ export class ProductPage implements OnInit {
     this.wasPredSearchClicked = true;
     this.getProductList();
     this.predictiveSearch = [];
+  }
+
+  async presentModal() {
+    const modal = await this.modalController.create({
+      component: SearchPage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        "productList": this.searchData,
+        "searchTerm": this.searchTerm
+      }
+    });
+    return await modal.present();
   }
 }

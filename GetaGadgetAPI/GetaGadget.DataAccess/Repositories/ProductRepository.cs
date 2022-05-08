@@ -74,8 +74,6 @@ namespace GetaGadget.DataAccess.Repositories
                 }
             }
 
-            _context.Products.RemoveRange(products);
-
             return products;
         }
     }
